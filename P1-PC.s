@@ -57,6 +57,7 @@ introduceinf:	.asciiz "Introduce el limite inferior [a]: "
 error:		.asciiz "Error, vuelve a introducir el rango.\n"
 introducesup:	.asciiz "Introduce el limite superior [b]: "
 fin:		.asciiz "\nFin del programa.\n"
+espacio: .asciiz " "
 
 # REGISTROS
 # $s0	inferior
