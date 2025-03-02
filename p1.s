@@ -135,3 +135,48 @@ b superior
 #            }
 #        }
 for:
+    move $t0, $s0   # i = inferior
+
+loop_i:
+    bgt $t0, $s1, end_loop   # Si i > superior, salir
+
+    li $t2, 1       # esPrimo = true
+    li $t1, 2       # j = 2
+
+loop_j:
+    bge $t1, $t0, check_prime   # Si j >= i, salir del bucle j
+
+    div $t0, $t1    # i / j
+    mfhi $t3        # Resto en $t3
+    beqz $t3, not_prime  # Si i % j == 0, es NO primo
+
+    addi $t1, $t1, 1  # j++
+    j loop_j
+
+not_prime:
+    li $t2, 0       # esPrimo = false
+
+check_prime:
+    beqz $t2, next_i  # Si esPrimo == 0, saltar
+
+    # Imprimir número primo
+    move $a0, $t0
+    li $v0, 1
+    syscall
+
+    # Imprimir espacio
+    li $v0, 4
+    la $a0, espacio
+    syscall
+
+next_i:
+    addi $t0, $t0, 1  # i++
+    j loop_i
+
+end_loop:
+    li $v0, 4
+    la $a0, fin
+    syscall
+
+    li $v0, 10
+    syscall
