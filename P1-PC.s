@@ -144,22 +144,55 @@ error_dos:
 	
 	b if_inf_fin
 	
-while_fin:
+if_sup_fin:
 move $t0, $s0
 
+# $s0 = inferior (a)
+# $s1 = superior (b)
+# $t0 = i (contador del primer for)
+# $t1 = j (contador del segundo for)
+# $t2 = esPrimo (1 si es primo, 0 si no)
+
 for_i:
-#    for (i = inferior; i <= superior; i++) {
-#        esPrimo = true;
-#        for (j = 2; j < i; j++) {
-	
+    bgt $t0, $s1, for_fin  # Si i > superior, salir del bucle principal
+
+    li $t2, 1     # esPrimo = true
+    li $t1, 2     # j = 2
+
+for_j:
+    bge $t1, $t0, check_prime  # Si j >= i, salir del bucle secundario
+
+    div $t0, $t1    # Divide i entre j
+    mfhi $t3        # Obtiene el residuo en $t3
+    beqz $t3, not_prime  # Si i % j == 0, no es primo
+
+    addi $t1, $t1, 1  # j++
+    j for_j
+
+not_prime:
+    li $t2, 0  # esPrimo = false
+
+check_prime:
+    beqz $t2, next_i  # Si no es primo, pasar al siguiente número
+
+    # Imprimir número primo
+    move $a0, $t0
+    li $v0, 1
+    syscall
+
+    # Imprimir espacio entre números
+    li $v0, 4
+    la $a0, espacio
+    syscall
+
+next_i:
+    addi $t0, $t0, 1  # i++
+    j for_i  # Repetir el bucle
 
 for_fin:
-	li $v0, 4
-	la $a0, fin
-	syscall
+    li $v0, 4
+    la $a0, fin
+    syscall
 
-#    std::cout << "\nFin del programa.\n";
-#    return 0;
-#}
-	li $v0, 10
-	syscall
+    li $v0, 10
+    syscall
