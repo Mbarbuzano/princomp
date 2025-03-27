@@ -372,49 +372,49 @@ while:
 	la $a0, endl
 	syscall
 
-	li $s6, 0
-	li $s7, 0 # interadores para la impresión
+	li $s6, 0# interadores para la impresión
 
 for_print_fil:
 #     for(int f = 0; f < numFil; f++) {
 #       for(int c = 0; c < numCol; c++) {
 #         std::cout << datos[f*numCol + c] << ' ';
 #       }
-	beq $s7, $s0, for_print_fin
+	bge $s6, $s0, for_print_fin
 	li $s7, 0
 
-for_print_col:
+	for_print_col:
 
-	beq $s7, $s1, for_print_col_fin
+		bge $s7, $s1, for_print_col_fin
 
-	mul $t0, $s6, $s1   # f * numCol
-    	add $t0, $t0, $s7   # f * numCol + c
-    	mul $t0, $t0, 4     # (f * numCol + c) * 4 (cada entero ocupa 4 bytes)
-    	add $t0, $s2, $t0   # Dirección base + desplazamiento
+		mul $t0, $s6, $s1   # f * numCol
+		add $t0, $t0, $s7   # f * numCol + c
+		mul $t0, $t0, 4     # (f * numCol + c) * 4 (cada entero ocupa 4 bytes)
+		add $t0, $s2, $t0   # Dirección base + desplazamiento
 
-	# Cargar el valor y imprimir
-    	lw $a0, 0($t0)      
-    	li $v0, 1          
-    	syscall
+		l.s $f12, 8($t0)
+		li $v0, 2
+		syscall
 
-	li $v0, 4
-	la $a0, space
-	syscall
+		li $v0, 4
+		la $a0, space
+		syscall
 
-	addi $s7, 1
-	b for_print_col
+		addi $s7, 1
+		b for_print_col
 
-for_print_col_fin:
+	for_print_col_fin:
 
+		li $v0, 4
+		la $a0, endl
+		syscall
+
+		addi $s6, 1
+		b for_print_fil
+
+for_print_fin:
 	li $v0, 4
 	la $a0, endl
 	syscall
-
-	addi $s6, 1
-	b for_print_fil
-
-for_print_fin:
-
 
 
 
