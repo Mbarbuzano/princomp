@@ -416,7 +416,55 @@ for_print_fin:
 	la $a0, endl
 	syscall
 
+menu_opciones:
+#     std::cout <<
+#     "(0) Terminar el programa\n"
+#     "(1) Cambiar la matriz de trabajo\n"
+#     "(2) Definir matriz 7\n"
+#     "(3) Cambiar un valor de la matriz\n"
+#     "(7) Contar valores superiores a un umbral\n"
+#     "\nIntroduce opción elegida: ";
+	li $v0, 4
+	la $a0, menu
+	syscall
 
+#     int opcion;
+#     std::cin >> opcion;
+	li $v0, 5
+	syscall
+	move $t0, $v0
+
+	beq $t0, 0, opcion_cero
+	beq $t0, 1, opcion_uno
+	beq $t0, 2, opcion_dos
+	beq $t0, 3, opcion_tres
+	beq $t0, 7, opcion_siete
+	b opcion_incorrecta
+
+opcion_cero:
+#     if(opcion == 0) {
+#       break;
+#     }
+b fin_programa
+
+#     // Opción 1 ////////////////////////////////////////////////////////////
+#     if(opcion == 1) {
+#       std::cout << "\nElije la matriz de trabajo (1..7): ";
+#       int matT;
+#       std::cin >> matT;
+
+
+
+
+
+
+
+opcion_incorrecta:
+#     // Opción Incorrecta ///////////////////////////////////////////////////
+#     std::cout << "Error: opcion incorrecta\n";
+	li $v0, 4
+	la $a0, erropc
+	syscall
 
 
 fin_programa:
