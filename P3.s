@@ -322,6 +322,9 @@ space: 	.asciiz " "
 # $s0 ---> numFil
 # $s1 ---> numCol
 # $s2 ---> matTrabajo
+# $s3 ---> elementos
+# $s4 ---> matT
+
 
 # $s6 ---> f (iterador de filas)
 # $s7 ---> c (iterador de columnas)
@@ -372,7 +375,7 @@ while:
 	la $a0, endl
 	syscall
 
-	li $s6, 0# interadores para la impresión
+	li $s6, 0 # interadores para la impresión
 
 for_print_fil:
 #     for(int f = 0; f < numFil; f++) {
@@ -434,7 +437,7 @@ menu_opciones:
 	syscall
 	move $t0, $v0
 
-	beq $t0, 0, opcion_cero
+	beqz $t0, opcion_cero
 	beq $t0, 1, opcion_uno
 	beq $t0, 2, opcion_dos
 	beq $t0, 3, opcion_tres
@@ -447,11 +450,100 @@ opcion_cero:
 #     }
 b fin_programa
 
+opcion_uno:
 #     // Opción 1 ////////////////////////////////////////////////////////////
 #     if(opcion == 1) {
 #       std::cout << "\nElije la matriz de trabajo (1..7): ";
 #       int matT;
 #       std::cin >> matT;
+	li $v0, 4
+	la $a0, petmat
+	syscall
+
+	li $v0, 5
+	syscall
+	move $s4, $v0
+
+#       switch(matT) {
+#         case 1:
+#           matTrabajo = &mat1;
+#           break;
+#         case 2:
+#           matTrabajo = &mat2;
+#           break;
+#         case 3:
+#           matTrabajo = &mat3;
+#           break;
+#         case 4:
+#           matTrabajo = &mat4;
+#           break;
+#         case 5:
+#           matTrabajo = &mat5;
+#           break;
+#         case 6:
+#           matTrabajo = &mat6;
+#           break;
+#         case 7:
+#           matTrabajo = &mat7;
+#           break;
+#         default:
+#           std::cout << "Numero de matriz de trabajo incorrecto\n";
+#           continue;  // volvemos al principio del bucle
+#       }
+#       continue;
+#     }
+
+	blt $s4, 1, seleccion_incorrecta
+	bgt $s4, 7, seleccion_incorrecta
+	beq $s4, 1, matriz_uno
+	beq $s4, 2, matriz_dos
+	beq $s4, 3, matriz_tres
+	beq $s4, 4, matriz_cuatro
+	beq $s4, 5, matriz_cinco
+	beq $s4, 6, matriz_seis
+	beq $s4, 7, matriz_siete
+
+matriz_uno:
+	la $s2, mat1
+   	 j switch_fin
+
+matriz_dos:
+   	 la $s2, mat2
+   	 j switch_fin
+
+matriz_tres:
+   	 la $s2, mat3
+   	 j switch_fin
+
+matriz_cuatro:
+    	la $s2, mat4
+   	 j switch_fin
+
+matriz_cinco:
+   	 la $s2, mat5
+  	  j switch_fin
+
+matriz_seis:
+ 	   la $s2, mat6
+  	  j switch_fin
+
+matriz_siete:
+  	  la $s2, mat7
+   	 j switch_fin
+
+seleccion_incorrecta:
+
+	li $v0, 4
+	la $a0, errmat
+	syscall
+
+switch_fin:
+	j while
+
+	
+opcion_dos:
+opcion_tres:
+opcion_siete:
 
 
 
@@ -466,6 +558,7 @@ opcion_incorrecta:
 	la $a0, erropc
 	syscall
 
+	j while
 
 fin_programa:
 #   std::cout << "\nTermina el programa\n";
