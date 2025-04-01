@@ -326,9 +326,11 @@ space: 	.asciiz " "
 # $s4 ---> matT
 
 
+
 # $s6 ---> f (iterador de filas)
 # $s7 ---> c (iterador de columnas)
-# estos dos últimos se usan en bucles que contienen llamadas al sistema
+# estos dos últimos se usan en bucles que contienen llamadas al sistema,
+# aunque también en la creación de la matriz en la opción 2 como nFil y nCol
 
 .text
 
@@ -542,6 +544,161 @@ switch_fin:
 
 	
 opcion_dos:
+#     if (opcion == 2) {
+#       int nFil;
+#       int nCol; // numero de columnas
+#       std::cout << "Introduce el numero de filas: ";
+#       std::cin >> nFil;
+numero_filas:
+	li $v0, 4
+	la $a0, petnf
+	syscall
+
+	li $v0, 5
+	syscall
+	move $s6, $v0
+
+#       if (nFil < 1 || nFil > MAXELTOS) {
+#         std::cout <<
+#           "Error: dimension incorrecta.  Numero de filas incorrecto\n";
+#         continue;  // volvemos al principio del bucle
+#       }
+	blt $s6, 1, error_nfilas
+	bgt $s6, MAXELTOS, error_nfilas
+	b numero_columnas
+
+error_nfilas:
+
+	li $v0, 4
+	la $a0, errnf
+	syscall
+
+	j while
+
+numero_columnas:
+#       std::cout << "Introduce el numero de columnas: ";
+#       std::cin >> nCol;
+#       if (nCol < 1 || nCol > MAXELTOS) {
+#         std::cout <<
+#           "Error: dimension incorrecta.  Numero de columnas incorrecto\n";
+#         continue;  // volvemos al principio del bucle
+#       }
+	li $v0, 4
+	la $a0, petnc
+	syscall
+
+	li $v0, 5
+	syscall
+	move $s7, $v0
+
+	blt $s7, 1, error_ncolumnas
+	bgt $s7, MAXELTOS, error_ncolumnas
+	b if_maximo
+
+error_ncolumnas:
+
+	li $v0, 4
+	la $a0, errnc
+	syscall
+
+	j while
+
+if_maximo:
+#       if (nFil * nCol > MAXELTOS) {
+#         std::cout << "Error: dimension incorrecta.  Demasiados elementos\n";
+#         continue;  // volvemos al principio del bucle
+#       }
+	mul $t0, $s6, $s7
+	blt $t0, MAXELTOS, if_max_fin
+
+	li $v0, 4
+	la $a0, errmax
+	syscall
+
+	b while
+
+if_max_fin: # en este punto vamos a usar $s4 y $s5 como f y c
+
+#       // inicializa la matriz 7 con los valores introducidos
+#       mat7.nFil = nFil;
+#       mat7.nCol = nCol;
+#       // solicitar los valores de los elementos de la matriz por filas
+#       for(int f = 0; f < nFil; f++) {
+#         for(int c = 0; c < nCol; c++) {
+#           std::cout << "Introduce el elemento (" << f << ',' << c << "): ";
+#           std::cin >> mat7.elementos[f * nCol + c];
+#         }
+#       }
+#       continue;
+#     }
+
+	la $s2, mat7
+	sw $s6, nFil($s2)
+	sw $s7, nCol($s2)
+
+	li $s4, 0
+
+for_filas:
+
+	bge $s4, nFil, for_filas_fin
+
+	li $s5, 0
+
+	for_columnas:
+		bge $s5, nCol, for_columnas_fin
+
+		li $v0, 4
+		la $a0, petel
+		syscall
+
+		li $v0, 1
+		move $a0, $s4
+		syscall
+
+		li $v0, 4
+		la $a0, petcom
+		syscall
+
+		li $v0, 1
+		move $a0, $5
+		syscall
+
+		li $v0, 4
+		la $a0, petel2
+		syscall
+
+		li $v0, 5
+		syscall
+		move $t1, $v0
+
+		mul $t0, $s4, $s7 # f * nCol
+		add $t0, $t0, $s5 # f * nCol + c
+		mul $t0, $t0, 4     # Cada elemento es de 4 bytes
+    		add $t0, $t0, $s2   # Añadir la dirección base de mat7
+    		sw $t1, 0($t0)      # Almacenar el valor en la dirección calculada
+
+		addi $s5, 1
+		b for_columnas
+	for_columnas_fin:
+
+
+	addi $s4, 1
+	b for_filas
+
+for_filas_fin:
+
+	j while
+
+
+
+
+
+
+
+
+
+
+
 opcion_tres:
 opcion_siete:
 
