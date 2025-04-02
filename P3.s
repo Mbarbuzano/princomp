@@ -330,7 +330,8 @@ space: 	.asciiz " "
 # $s6 ---> f (iterador de filas)
 # $s7 ---> c (iterador de columnas)
 # estos dos últimos se usan en bucles que contienen llamadas al sistema,
-# aunque también en la creación de la matriz en la opción 2 como nFil y nCol
+# aunque también en la creación de la matriz 7 en la opción 2 como nFil y nCol
+# en la opción tres pasan a ser indFil e indCol
 
 .text
 
@@ -674,8 +675,8 @@ for_filas:
 		add $t0, $t0, $s5 	# f * nCol + c
 		mul $t0, $t0, 4     # Cada elemento es de 4 bytes
 		add $t0, $t0, $s2   # Añadir la dirección base de mat7
-		addi $t0, $t0, 8
-		s.s $f20, 0($t0)   	 # Almacenar el valor en la dirección calculada
+		addi $t0, $t0, 8		# añadir los espacios de nfil y ncol
+		s.s $f20, 0($t0)   	# Almacenar el valor en la dirección calculada
 
 		addi $s5, 1
 		b for_columnas
@@ -690,16 +691,81 @@ for_filas_fin:
 	j while
 
 
-
-
-
-
-
-
-
-
-
 opcion_tres:
+#     // Opción 3  //////////////////////////////////////////////////////////
+#     if(opcion == 3) {
+#       std::cout << "\nIndice de fila: ";
+#       int indFil;
+#       std::cin >> indFil;
+#       if ((indFil < 0) || (indFil >= numFil)) {
+#         std::cout <<
+#           "Error: dimension incorrecta.  Numero de fila incorrecto\n";
+#         continue;  // volvemos al principio del bucle
+#       }
+indice_fila:
+	li $v0, 4
+	la $a0, petfil
+	syscall
+
+	li $v0, 5
+	syscall
+	move $s6, $v0
+
+	bltz $s6, error_indfil
+	bge $s6, $s0, error_indfil
+	b indice_columna
+
+error_indfil:
+
+	li $v0, 4
+	la $a0, errfil
+	syscall
+
+	j while
+
+indice_columna:
+#       std::cout << "Indice de columna: ";
+#       int indCol;
+#       std::cin >> indCol;
+#       if ((indCol < 0) || (indCol >= numCol)){
+#         std::cout <<
+#           "Error: dimension incorrecta.  Numero de columna incorrecto\n";
+#         continue;  // volvemos al principio del bucle
+#       }
+	li $v0, 4
+	la $a0, petcol
+	syscall
+
+	li $v0, 5
+	syscall
+	move $s7, $v0
+
+	bltz $s7, error_indcol
+	bge $s7, $s1, error_indcol
+	b nuevo_valor
+
+error_indcol:
+
+	li $v0, 4
+	la $a0, errcol
+	syscall
+
+	j while
+
+nuevo_valor:
+
+
+
+
+
+
+
+
+
+
+
+
+
 opcion_siete:
 
 
