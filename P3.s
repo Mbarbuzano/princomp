@@ -640,12 +640,11 @@ if_max_fin: # en este punto vamos a usar $s4 y $s5 como f y c
 
 for_filas:
 
-	bge $s4, nFil, for_filas_fin
-
+	bge $s4, $s6, for_filas_fin
 	li $s5, 0
 
 	for_columnas:
-		bge $s5, nCol, for_columnas_fin
+		bge $s5, $s7, for_columnas_fin
 
 		li $v0, 4
 		la $a0, petel
@@ -660,22 +659,23 @@ for_filas:
 		syscall
 
 		li $v0, 1
-		move $a0, $5
+		move $a0, $s5
 		syscall
 
 		li $v0, 4
 		la $a0, petel2
 		syscall
 
-		li $v0, 5
+		li $v0, 6
 		syscall
-		move $t1, $v0
+		mov.s $f20, $f0
 
-		mul $t0, $s4, $s7 # f * nCol
-		add $t0, $t0, $s5 # f * nCol + c
+		mul $t0, $s4, $s7 	# f * nCol
+		add $t0, $t0, $s5 	# f * nCol + c
 		mul $t0, $t0, 4     # Cada elemento es de 4 bytes
-    		add $t0, $t0, $s2   # Añadir la dirección base de mat7
-    		sw $t1, 0($t0)      # Almacenar el valor en la dirección calculada
+		add $t0, $t0, $s2   # Añadir la dirección base de mat7
+		addi $t0, $t0, 8
+		s.s $f20, 0($t0)   	 # Almacenar el valor en la dirección calculada
 
 		addi $s5, 1
 		b for_columnas
