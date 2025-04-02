@@ -753,20 +753,35 @@ error_indcol:
 	j while
 
 nuevo_valor:
+#       std::cout << "Nuevo valor para el elemento: ";
+#       float valor;
+#       std::cin >> valor;
+#       // cambiar el valor de la matriz de trabajo en la posicion introducida
+#       datos[indFil * numCol + indCol] = valor;
+#       continue;
+#     }
+	li $v0, 4
+	la $a0, petval
+	syscall
 
+	li $v0, 6
+	syscall
+	mov.s $f20, $f0
 
+	mul $t0, $s6, $s1	# 
+	add $t0, $t0, $s7 	# 
+	mul $t0, $t0, 4     # Cada elemento es de 4 bytes
+	add $t0, $t0, $s2   # Añadir la dirección base de mat7
+	addi $t0, $t0, 8		# añadir los espacios de nfil y ncol
+	s.s $f20, 0($t0)   	# Almacenar el valor en la dirección calculada
 
-
-
-
-
-
-
-
-
+	j while
 
 
 opcion_siete:
+
+
+
 
 
 
