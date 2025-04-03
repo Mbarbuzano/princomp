@@ -332,6 +332,7 @@ space: 	.asciiz " "
 # estos dos últimos se usan en bucles que contienen llamadas al sistema,
 # aunque también en la creación de la matriz 7 en la opción 2 como nFil y nCol
 # en la opción tres pasan a ser indFil e indCol
+# en la opción 7 vuelven a pasar a ser f y c
 
 .text
 
@@ -768,25 +769,87 @@ nuevo_valor:
 	syscall
 	mov.s $f20, $f0
 
-	mul $t0, $s6, $s1	# 
-	add $t0, $t0, $s7 	# 
-	mul $t0, $t0, 4     # Cada elemento es de 4 bytes
-	add $t0, $t0, $s2   # Añadir la dirección base de mat7
-	addi $t0, $t0, 8		# añadir los espacios de nfil y ncol
+	mul $t0, $s6, $s1	
+	add $t0, $t0, $s7 	
+	mul $t0, $t0, 4     	# Cada elemento es de 4 bytes
+	add $t0, $t0, $s2   	# Añadir la dirección base de mat7
+	addi $t0, $t0, 8	# añadir los espacios de nfil y ncol
 	s.s $f20, 0($t0)   	# Almacenar el valor en la dirección calculada
 
 	j while
 
 
 opcion_siete:
+#     // Opción 7 ////////////////////////////////////////////////////////////
+#     if(opcion == 7) {
+#       std::cout << "Introduce el umbral: ";
+#       float umbral;
+#       std::cin >> umbral;
+#       int contador = 0;
+#       for(int f = 0; f < numFil; f++) {
+#         for(int c = 0; c < numCol; c++) {
+#           float valor = datos[f * numCol + c];
+#           if (valor > umbral) {
+#             contador++;
+#           }
+#         }
+#       }
+#       std::cout << "\nNumero de valores superiores al umbral: " << contador;
+
+#       continue;
+#     }
+	li $v0, 4
+	la $a0, petum
+	syscall
+
+	li $v0, 6
+	syscall
+	mov.s $f20, $f0
+
+	li $s5, 0 # Contador
+
+for_f:
+	bge $s6, $s0, for_f_fin
+
+	li $s7, 0
+
+	for_c:
+		bge $s7, $s1, for_c_fin
+
+		mul $t0, $s6, $s2 	# f * numCol
+		add $t0, $t0, $s7 	# f * numCol + c
+		mul $t0, $t0, 4 	# multiplicar por el número de bytes
+		add $t0, $t0, $s2	# añadir al desplazamiento la dirección de la matriz
+		add $t0, $t0, 8		# desplazamos las posiciones de nfil y ncol
+		l.s $f21, 0($t0)	# guardamos el valor para futura comparación
+
+		c.le.s $f21, $f20
+		bc1t umbral_no
+
+		addi $s5, 1 #aumento del contador
+
+		umbral_no:
+
+		addi $s7, 1
+		b for_c
+
+	for_c_fin:
+
+		addi $s6, 1
+		b for_f
 
 
+for_f_fin:
 
+	li $v0, 4
+	la $a0, umbstr
+	syscall
 
+	li $v0, 1
+	move $a0, $s5
+	syscall
 
-
-
-
+	j while
 
 
 opcion_incorrecta:
