@@ -319,6 +319,8 @@ endl:	.asciiz "\n"
 space: 	.asciiz " "
 
 ######### REGISTROS #########
+######### CONSTANTES ########
+# Estos registros no cambian en las opciones
 # $s0 ---> numFil
 # $s1 ---> numCol
 # $s2 ---> matTrabajo
@@ -546,6 +548,7 @@ switch_fin:
 
 	
 opcion_dos:
+#     // Opción 2: Definir matriz 7 //////////////////////////////////////////
 #     if (opcion == 2) {
 #       int nFil;
 #       int nCol; // numero de columnas
@@ -617,7 +620,7 @@ if_maximo:
 	la $a0, errmax
 	syscall
 
-	b while
+	j while
 
 if_max_fin: # en este punto vamos a usar $s4 y $s5 como f y c
 
@@ -634,9 +637,9 @@ if_max_fin: # en este punto vamos a usar $s4 y $s5 como f y c
 #       continue;
 #     }
 
-	la $s2, mat7
-	sw $s6, nFil($s2)
-	sw $s7, nCol($s2)
+	la $s3, mat7
+	sw $s6, nFil($s3)
+	sw $s7, nCol($s3)
 
 	li $s4, 0
 
@@ -674,9 +677,9 @@ for_filas:
 
 		mul $t0, $s4, $s7 	# f * nCol
 		add $t0, $t0, $s5 	# f * nCol + c
-		mul $t0, $t0, 4     # Cada elemento es de 4 bytes
-		add $t0, $t0, $s2   # Añadir la dirección base de mat7
-		addi $t0, $t0, 8		# añadir los espacios de nfil y ncol
+		mul $t0, $t0, sizeF     # Cada elemento es de 4 bytes
+		add $t0, $t0, $s3   # Añadir la dirección base de mat7
+		addi $t0, $t0, elementos		# añadir los espacios de nfil y ncol
 		s.s $f20, 0($t0)   	# Almacenar el valor en la dirección calculada
 
 		addi $s5, 1
@@ -771,10 +774,10 @@ nuevo_valor:
 
 	mul $t0, $s6, $s1	
 	add $t0, $t0, $s7 	
-	mul $t0, $t0, 4     	# Cada elemento es de 4 bytes
-	add $t0, $t0, $s2   	# Añadir la dirección base de mat7
-	addi $t0, $t0, 8	# añadir los espacios de nfil y ncol
-	s.s $f20, 0($t0)   	# Almacenar el valor en la dirección calculada
+	mul $t0, $t0, sizeF      # Cada elemento es de 4 bytes
+	add $t0, $t0, $s2        # Añadir la dirección base de mat7
+	addi $t0, $t0, elementos # añadir los espacios de nfil y ncol
+	s.s $f20, 0($t0)   	 # Almacenar el valor en la dirección calculada
 
 	j while
 
@@ -807,21 +810,24 @@ opcion_siete:
 	mov.s $f20, $f0
 
 	li $s5, 0 # Contador
+	li $s6, 0 # f
 
-for_f:
-	bge $s6, $s0, for_f_fin
+for_filas_umbral:
+	bge $s6, $s0, for_filas_umbral_fin
 
-	li $s7, 0
+	li $s7, 0 # c
 
-	for_c:
-		bge $s7, $s1, for_c_fin
+	for_columnas_umbral:
+		bge $s7, $s1, for_columnas_umbral_fin
 
-		mul $t0, $s6, $s2 	# f * numCol
-		add $t0, $t0, $s7 	# f * numCol + c
-		mul $t0, $t0, 4 	# multiplicar por el número de bytes
-		add $t0, $t0, $s2	# añadir al desplazamiento la dirección de la matriz
-		add $t0, $t0, 8		# desplazamos las posiciones de nfil y ncol
-		l.s $f21, 0($t0)	# guardamos el valor para futura comparación
+		mul $t0, $s6, $s1 	 # f * numCol
+		add $t0, $t0, $s7 	 # f * numCol + c
+		mul $t0, $t0, sizeF	 # 4 bytes por elemento
+		add $t0, $t0, $s2	 # dir.matriz + desplazamiento
+		addi $t0, $t0, elementos # desplazado a elementos
+		l.s $f21, 0($t0)	 # extracción del valor
+
+	if_umbral:
 
 		c.le.s $f21, $f20
 		bc1t umbral_no
@@ -831,15 +837,15 @@ for_f:
 		umbral_no:
 
 		addi $s7, 1
-		b for_c
+		b for_columnas_umbral
 
-	for_c_fin:
+	for_columnas_umbral_fin:
 
 		addi $s6, 1
-		b for_f
+		b for_filas_umbral
 
 
-for_f_fin:
+for_filas_umbral_fin:
 
 	li $v0, 4
 	la $a0, umbstr
